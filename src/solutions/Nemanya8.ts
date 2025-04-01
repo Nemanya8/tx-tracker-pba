@@ -7,6 +7,8 @@ import type {
   OutputAPI,
 } from "../types"
 
+var pendingTx: string[] = []
+
 export default function Nemanya8(api: API, outputApi: OutputAPI) {
   return (event: IncomingEvent) => {
     // Requirements:
@@ -38,11 +40,27 @@ export default function Nemanya8(api: API, outputApi: OutputAPI) {
     //     b) older than the currently finalized block.
 
     const onNewBlock = ({ blockHash, parent }: NewBlockEvent) => {
-      // TODO:: implement it
-    }
+      const bodyTransactions = api.getBody(blockHash);
+    
+      for (const tx of pendingTx) {
+        if (bodyTransactions.find(transaction => transaction === tx)) {
+          if (api.isTxSuccessful(blockHash, tx)) {
+            pendingTx = pendingTx.filter(transaction => transaction !== tx);
+            return outputApi.onTxSettled(tx, { blockHash: blockHash, type: "valid", successful: true });
+          } else {
+            pendingTx = pendingTx.filter(transaction => transaction !== tx);
+            return outputApi.onTxSettled(tx, { blockHash: blockHash, type: "valid", successful: false });
+          }
+        } else if (!api.isTxValid(blockHash, tx)) {
+          pendingTx = pendingTx.filter(transaction => transaction !== tx);
+          return outputApi.onTxSettled(tx, { blockHash: blockHash, type: "invalid" });
+        }
+      }
+    };
+    
 
     const onNewTx = ({ value: transaction }: NewTransactionEvent) => {
-      // TODO:: implement it
+      pendingTx.push(transaction);
     }
 
     const onFinalized = ({ blockHash }: FinalizedEvent) => {
