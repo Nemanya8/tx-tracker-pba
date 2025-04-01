@@ -7,7 +7,7 @@ import type {
   OutputAPI,
 } from "../types"
 
-export default function yourGhHandle(api: API, outputApi: OutputAPI) {
+export default function Nemanya8(api: API, outputApi: OutputAPI) {
   return (event: IncomingEvent) => {
     // Requirements:
     //
@@ -49,19 +49,18 @@ export default function yourGhHandle(api: API, outputApi: OutputAPI) {
       // TODO:: implement it
     }
 
-    return (event: IncomingEvent) => {
-      switch (event.type) {
-        case "newBlock": {
-          onNewBlock(event)
-          break
-        }
-        case "newTransaction": {
-          onNewTx(event)
-          break
-        }
-        case "finalized":
-          onFinalized(event)
+      
+    switch (event.type) {
+      case "newBlock": {
+        onNewBlock(event)
+        break
       }
+      case "newTransaction": {
+        onNewTx(event)
+        break
+      }
+      case "finalized":
+        onFinalized(event)
     }
   }
 }
